@@ -1,125 +1,182 @@
-var x = 25;
-var y = 25;
-
 var xstart = 35;
 var ystart = 35;
 
 
-var fx1 = 748;
-var fx2 = 820;
-var fy1 = 604;
-var fy2 = 628;
-
-var richting = 0;
-var direction = "static";
-
 var gameMode = 'StartScreen';
 
 var startScreen;
+var gameOver;
 var level1;
 var level2;
-var animation
+var theEnd;
+var animation;
+var cherry
+
+var points = 0;
 
 var speed = 2.5;
 
 var pacman;
+var finishsprite;
+var level1sprite;
+var level2sprite;
 
-var maze;
 
 function preload() {
-  bg1 = loadImage('assets/background1.jpg');
-  bg2 = loadImage('assets/background2.png');
-  startScreen = loadImage('assets/Pacman-startScreen.jpg');
-  level1 = loadImage('assets/intro.png');
-  level2 = loadImage('assets/level2.jpg');
-  finish1 = loadImage('assets/finish.png');
-  animation = loadAnimation('sprites/1.png','sprites/2.png','sprites/3.png','sprites/4.png','sprites/5.png','sprites/6.png','sprites/7.png','sprites/8.png','sprites/9.png','sprites/10.png','sprites/11.png','sprites/12.png','sprites/13.png','sprites/14.png','sprites/15.png','sprites/16.png','sprites/17.png','sprites/18.png','sprites/19.png','sprites/20.png','sprites/21.png',);
+  bg1 = loadImage('assets/Pacman/assets/background1.jpg');
+  bg2 = loadImage('assets/Pacman/assets/background2.png');
+  startScreen = loadImage('assets/Pacman/assets/Pacman-startScreen.jpg');
+  gameOver = loadImage('assets/Pacman/assets/gameover.png');
+  theEnd = loadImage('assets/Pacman/assets/TheEnd.png');
+  level1 = loadImage('assets/Pacman/assets/intro.png');
+  level2 = loadImage('assets/Pacman/assets/level2.png');
+  finish = loadImage('assets/Pacman/assets/finish.png');
+  cherry = loadImage('assets/Pacman/assets/Cherry.png');
+  animation = loadAnimation('assets/Pacman/sprites/1.png', 'assets/Pacman/sprites/2.png', 'assets/Pacman/sprites/3.png', 'assets/Pacman/sprites/4.png', 'assets/Pacman/sprites/5.png', 'assets/Pacman/sprites/6.png', 'assets/Pacman/sprites/7.png', 'assets/Pacman/sprites/8.png', 'assets/Pacman/sprites/9.png', 'assets/Pacman/sprites/10.png', 'assets/Pacman/sprites/11.png', 'assets/Pacman/sprites/12.png', 'assets/Pacman/sprites/13.png', 'assets/Pacman/sprites/14.png', 'assets/Pacman/sprites/15.png', 'assets/Pacman/sprites/16.png', 'assets/Pacman/sprites/17.png', 'assets/Pacman/sprites/18.png', 'assets/Pacman/sprites/19.png', 'assets/Pacman/sprites/20.png', 'assets/Pacman/sprites/21.png');
 }
 
 function setup() {
   createCanvas(900, 700);
-  frameRate(60);
+  frameRate(120);
+
+  pacman = createSprite(500, 500);
+  pacman.setCollider("circle",0,0,25)
+  pacman.addAnimation('circle', animation);
   
 
-  pacman = createSprite(x, y,0,0);
-  pacman.addAnimation('round', animation);
+  finishsprite = createSprite(450, 350);
+  finishsprite.addImage(finish);
 
-  finish1sprite = createSprite(450,350);
-  finish1sprite.addImage(finish1);
-
-  level1sprite = createSprite(450,350);
+  level1sprite = createSprite(450, 350);
   level1sprite.addImage(level1);
- 
+
+  level2sprite = createSprite(450, 350);
+  level2sprite.addImage(level2);
+
+  cherrysprite = createSprite(400, 50);
+  cherrysprite.addImage(cherry);
+
+  
+
 }
 
-function draw()
-{
+
+//richtingen
+function draw() {
   pacman.rotateToDirection = true;
   pacman.animation.play();
-  pacman.getBoundingBox();
+  drawSprites();
 
-  if (keyIsPressed)
-  {
-    if (key == 's')
-    {
-      pacman.setSpeed(speed,90);
+  if (keyIsPressed) {
+    if (key == 's') {
+      pacman.setSpeed(speed, 90);
     }
-    if (key == 'z')
-    {
-      pacman.setSpeed(speed,270);
+    if (key == 'z') {
+      pacman.setSpeed(speed, 270);
     }
-    if (key == 'd')
-    {
-        pacman.setSpeed(speed,0);
+    if (key == 'd') {
+      pacman.setSpeed(speed, 0);
     }
-    if (key == 'q') 
-    {
-      pacman.setSpeed(speed,180);
+    if (key == 'q') {
+      pacman.setSpeed(speed, 180);
     }
     //testing
-    if (key == 'p') 
-    {
-     pacman.setSpeed(0);
+    if (key == 'p') {
+      pacman.setSpeed(0);
     }
   }
 
+  //gamestate
   switch (gameMode) {
-      case 'StartScreen':
-        clear();
-        background(0);
-        image(startScreen, 0, 0);
+    //startscherm
+    case 'StartScreen':
+      clear();
+      background(0);
+      image(startScreen, 0, 0);
 
-             if(mouseIsPressed == true && mouseX >= 304 && mouseX <= 588 &&mouseY >= 535 && mouseY <= 617)
-              {
-                gameMode = 'Level1';
+      if (mouseIsPressed == true && mouseX >= 304 && mouseX <= 588 && mouseY >= 535 && mouseY <= 617) {
+        gameMode = 'Level1';
+        pacman.position.x = xstart;
+        pacman.position.y = ystart;
+        pacman.setSpeed(0);
+      }
+      break;
 
-                pacman.position.x = xstart;
-                pacman.position.y = ystart;
-                pacman.setSpeed(0);
+    //level1 map
+    case 'Level1':
+      clear();
+      background(0);
+      background(bg1);
+      textSize(50);
+      text(points, 750, 50);
+      drawSprite(level1sprite);
+      drawSprite(finishsprite);
+      drawSprite(pacman);
+      points = 0;
+      speed = 2.5;
 
-              }
-      	break;
+      //pixel collision
+      if (level1sprite.overlapPixel(pacman.position.x - 24, pacman.position.y + 24) || level1sprite.overlapPixel(pacman.position.x + 24, pacman.position.y - 24)|| level1sprite.overlapPixel(pacman.position.x + 24, pacman.position.y + 24) || level1sprite.overlapPixel(pacman.position.x - 24, pacman.position.y - 24)== true) {
+        gameMode = 'GameOver'
+      }
+      if (finishsprite.overlapPixel(pacman.position.x - 24, pacman.position.y + 24) || finishsprite.overlapPixel(pacman.position.x + 24, pacman.position.y - 24) || finishsprite.overlapPixel(pacman.position.x + 24, pacman.position.y + 24) || finishsprite.overlapPixel(pacman.position.x - 24, pacman.position.y - 24) == true) {
+        gameMode = 'Level2';
+        pacman.position.x = xstart;
+        pacman.position.y = ystart;
+        pacman.setSpeed(0);
+        points = points + 20;
+      }
+      break;
 
-        case 'Level1':
-          clear();
-          background(0);
-          background(bg1);
-          drawSprite(pacman);
-          drawSprite(level1sprite);
-          drawSprite(finish1sprite);
+    //level2 map
+    case 'Level2':
+      clear();
+      background(0);
+      background(bg2);
+      textSize(50);
+      text(points, 750, 50);
+      drawSprite(cherrysprite);
+      drawSprite(level2sprite);
+      drawSprite(finishsprite);
+      drawSprite(pacman);
 
-          
-          if (level1sprite.overlapPixel(pacman.position.x-24 ,pacman.position.y + 24) || level1sprite.overlapPixel(pacman.position.x +24,pacman.position.y -24) == true)
-          {
-            gameMode = 'StartScreen';
-          }
-          if (finish1sprite.overlapPixel(pacman.position.x-24 ,pacman.position.y + 24) || finish1sprite.overlapPixel(pacman.position.x +24,pacman.position.y -24) == true) 
-          {
-            gameMode = 'StartScreen';   
-          }
-        break;
+      //pixel collision
+      if (cherrysprite.overlapPixel(pacman.position.x - 24, pacman.position.y + 24) || cherrysprite.overlapPixel(pacman.position.x + 24, pacman.position.y - 24) || cherrysprite.overlapPixel(pacman.position.x + 24, pacman.position.y + 24) || cherrysprite.overlapPixel(pacman.position.x - 24, pacman.position.y - 24) == true) {
+        speed = 6;
+      }
+      if (level2sprite.overlapPixel(pacman.position.x - 24, pacman.position.y + 24) || level2sprite.overlapPixel(pacman.position.x + 24, pacman.position.y - 24) || level2sprite.overlapPixel(pacman.position.x + 24, pacman.position.y + 24) || level2sprite.overlapPixel(pacman.position.x - 24, pacman.position.y - 24) == true) {
+        gameMode = 'GameOver'
+      }
+      if (finishsprite.overlapPixel(pacman.position.x - 24, pacman.position.y + 24) || finishsprite.overlapPixel(pacman.position.x + 24, pacman.position.y - 24) || finishsprite.overlapPixel(pacman.position.x + 24, pacman.position.y + 24) || finishsprite.overlapPixel(pacman.position.x - 24, pacman.position.y - 24) == true) {
+        points = points + 20;
+        gameMode = 'TheEnd';
+      }
+      break;
 
+    //gameoverscherm
+    case 'GameOver':
+      clear();
+      background(0);
+      image(gameOver, 0, 0);
 
-    }
+      if (mouseIsPressed == true && mouseX >= 126 && mouseX <= 410 && mouseY >= 522 && mouseY <= 602) {
+        gameMode = 'Level1';
+        pacman.position.x = xstart;
+        pacman.position.y = ystart;
+        pacman.setSpeed(0);
+      }
+
+      if (mouseIsPressed == true && mouseX >= 526 && mouseX <= 810 && mouseY >= 522 && mouseY <= 602) {
+        gameMode = 'TheEnd';
+      }
+      break;
+
+    //eindscherm
+    case 'TheEnd':
+      clear();
+      background(0);
+      image(theEnd, 0, 0);   
+      break;
+  }
 
 }
